@@ -1,7 +1,7 @@
 package com.finalproject.safepickup.Model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,11 +14,19 @@ import java.time.LocalDateTime;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
+@Entity
 public class Admin {
 
+    @Id
     private Integer id;
 
     @CreationTimestamp
     @Column(updatable = false)
     private LocalDateTime LastLoginAT;
+
+    /* Relationship:   */
+    @OneToOne
+    @MapsId
+    @JsonIgnore
+    private User user;
 }

@@ -1,5 +1,6 @@
 package com.finalproject.safepickup.Model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -43,5 +44,17 @@ public class ExitLog {
     private String parentLon; // ask from UI
 
 
+    /* Relationships:   */
 
+    @ManyToOne
+    @JsonIgnore
+    private Parent parent;
+
+    @ManyToOne
+    @JsonIgnore
+    private Student student;
+
+    @ManyToOne
+    @JsonIgnore
+    private NfcCard NfcCard;
 }

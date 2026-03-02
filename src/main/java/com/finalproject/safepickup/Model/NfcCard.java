@@ -1,5 +1,6 @@
 package com.finalproject.safepickup.Model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Pattern;
@@ -7,9 +8,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @Setter
 @Getter
@@ -36,4 +37,13 @@ public class NfcCard {
 
     @Column(updatable = false)
     private LocalDateTime IssuedAt;
+
+    /* Relationships:   */
+
+    @ManyToOne
+    @JsonIgnore
+    private Student student;
+
+    @OneToMany(mappedBy = "NfcCard",  cascade = CascadeType.ALL) // mappedBy: point to the name of Entity at the other side
+    private Set<ExitLog> exitLogs;
 }
