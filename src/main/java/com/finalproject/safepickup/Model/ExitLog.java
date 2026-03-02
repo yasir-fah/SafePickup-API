@@ -27,15 +27,16 @@ public class ExitLog {
 
     // add NfcCard id (many-to-one)
 
-    @CreationTimestamp
+
     @Column(updatable = false)
     private LocalDateTime ScanTime;
 
     @Column(updatable = false)
+    @CreationTimestamp
     private LocalDateTime RequestTime; // when parent request exit
 
-    @Column(updatable = false)
-    private LocalDateTime ExpiresAt; // calculated manually (add schedular)
+    @Column(updatable = true)
+    private LocalDateTime ExpiresAt; // todo: calculated manually (add schedular)
 
     private boolean IsAccepted = false;
 

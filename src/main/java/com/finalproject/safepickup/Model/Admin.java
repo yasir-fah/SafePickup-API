@@ -21,8 +21,8 @@ public class Admin {
     private Integer id;
 
     @CreationTimestamp
-    @Column(updatable = false)
-    private LocalDateTime LastLoginAT;
+    @Column(updatable = true)
+    private LocalDateTime LastLoginAt;
 
     /* Relationship:   */
     @OneToOne

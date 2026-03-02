@@ -24,7 +24,7 @@ public class NfcCard {
     private Integer Id;
 
     @NotEmpty(message = "UID can't be empty")
-    @Column(unique = true)
+    @Column(unique = true, nullable = false)
     private String UId;
 
     // add student (one-to-one)
@@ -36,7 +36,7 @@ public class NfcCard {
 
 
     @Column(updatable = false)
-    private LocalDateTime IssuedAt;
+    private LocalDateTime IssuedAt; // issued when (connected with student)
 
     /* Relationships:   */
 
