@@ -47,5 +47,6 @@ public class Student {
     private Set<NfcCard> nfcCards;
 
     @OneToMany(mappedBy = "student", cascade = CascadeType.ALL)
+    @JsonIgnore
     private Set<ExitLog> exitLogs;
 }
