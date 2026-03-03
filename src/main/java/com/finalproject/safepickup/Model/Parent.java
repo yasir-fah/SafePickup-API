@@ -24,10 +24,10 @@ public class Parent {
 
 
     @Column(unique = true, nullable = false)
-    private String NationalId;
+    private String nationalId;
 
     @Column(unique = true, nullable = false)
-    private String Phone;
+    private String phone;
 
     private boolean isAccepted = false;
 

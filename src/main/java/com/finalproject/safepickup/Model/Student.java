@@ -21,11 +21,10 @@ public class Student {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer Id;
 
-    // connect parent id (many-to-one)
-    // code here
+
     @Column(nullable = false, name = "username")
     @Size(min = 3, max = 50, message = "username should be between 3 and 50")
-    private String Name;
+    private String name;
 
     @Column(nullable = false)
     private String Grade;
