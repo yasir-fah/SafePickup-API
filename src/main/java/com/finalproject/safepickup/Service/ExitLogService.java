@@ -18,9 +18,9 @@ public class ExitLogService {
     // 1- Get all exit logs
     public List<ExitLogResponseDTO> findAll() {
         List<ExitLog> exitLogs = exitLogRepository.findAll();
-        if (exitLogs == null) {
-            throw new ApiException("Exit logs not found");
-        }
+//        if (exitLogs.isEmpty()) {
+//            throw new ApiException("Exit logs not found");
+//        }
         return exitLogs.stream()
                 .map(ExitLogResponseDTO::new)
                 .collect(Collectors.toList());
@@ -29,9 +29,9 @@ public class ExitLogService {
     // 2- Get exit logs by student
     public List<ExitLogResponseDTO> findByStudentId(Integer studentId) {
         List<ExitLog> exitLogs = exitLogRepository.findByStudentId(studentId);
-        if (exitLogs == null) {
-            throw new ApiException("Exit logs for student not found");
-        }
+//        if (exitLogs.isEmpty()) {
+//            throw new ApiException("Exit logs for student not found");
+//        }
         return exitLogs.stream()
                 .map(ExitLogResponseDTO::new)
                 .collect(Collectors.toList());
@@ -40,9 +40,9 @@ public class ExitLogService {
     // 3- Get exit logs by parent (shows all their children's logs)
     public List<ExitLogResponseDTO> findByParentId(Integer parentId) {
         List<ExitLog> exitLogs = exitLogRepository.findByParentId(parentId);
-        if (exitLogs == null) {
-            throw new ApiException("Exit logs for parent not found");
-        }
+//        if (exitLogs.isEmpty()) {
+//            throw new ApiException("Exit logs for parent is empty");
+//        }
         return exitLogs.stream()
                 .map(ExitLogResponseDTO::new)
                 .collect(Collectors.toList());

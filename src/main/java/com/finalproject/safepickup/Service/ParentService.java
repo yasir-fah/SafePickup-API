@@ -88,6 +88,9 @@ public class ParentService {
             throw new ApiException("Parent not found");
         }
 
+        if(parent.getUser() == null) {
+            throw new ApiException("Associated user not found");
+        }
         // 2- delete
         User user = parent.getUser();
         userRepository.delete(user);

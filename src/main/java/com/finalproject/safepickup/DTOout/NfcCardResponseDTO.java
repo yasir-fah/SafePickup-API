@@ -11,13 +11,13 @@ import lombok.NoArgsConstructor;
 public class NfcCardResponseDTO {
 
     private Integer id;
-    private String uId;
+    private String uid;
     private String status;
 
 
     public NfcCardResponseDTO(NfcCard nfcCard) {
         this.id = nfcCard.getId();
-        this.uId = nfcCard.getUid();
+        this.uid = nfcCard.getUid();
         this.status = nfcCard.getStatus();
     }
 

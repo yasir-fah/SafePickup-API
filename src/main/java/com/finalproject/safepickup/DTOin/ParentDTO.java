@@ -28,5 +28,6 @@ public class ParentDTO {
     private String nationalId;
 
     @Pattern(regexp = "^05\\d{8}$", message = "Phone number must be a valid Saudi mobile in the format 05XXXXXXXX")
+    @NotEmpty(message = "phone can't be empty")
     private String phone;
 }
