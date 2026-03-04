@@ -23,20 +23,14 @@ public class NfcCard {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer Id;
 
-    @NotEmpty(message = "UID can't be empty")
-    @Column(unique = true, nullable = false)
-    private String UId;
+    @Column(unique = true, nullable = false, name = "uid")
+    private String uid; // cross to real NFC tag UID
 
-    // add student (one-to-one)
-    @Pattern(
-            regexp = "^(FREE|RESERVED)$",
-            message = "Status must be either 'FREE' or 'RESERVED'"
-    )
-    private String status;
 
+    private String status = "FREE";
 
     @Column(updatable = false)
-    private LocalDateTime IssuedAt; // issued when (connected with student)
+    private LocalDateTime issuedAt; //todo: issued when (connected with student)
 
     /* Relationships:   */
 
