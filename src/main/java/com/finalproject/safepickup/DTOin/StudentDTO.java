@@ -27,8 +27,4 @@ public class StudentDTO {
     @NotNull(message = "School longitude is required")
     private double SchoolLon;
 
-    @NotEmpty(message = "Parent National ID is required")
-    @Size(min = 10, max = 10, message = "National ID must be exactly 10 digits")
-    @Pattern(regexp = "^\\d{10}$", message = "ID must contain only 10 digits")
-    private String parentNationalId;
 }
