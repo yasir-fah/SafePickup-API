@@ -2,6 +2,7 @@ package com.finalproject.safepickup.Service;
 
 import com.finalproject.safepickup.Api.ApiException;
 import com.finalproject.safepickup.DTOin.ParentDTO;
+import com.finalproject.safepickup.DTOout.ParentResponseDTO;
 import com.finalproject.safepickup.Model.Parent;
 import com.finalproject.safepickup.Model.User;
 import com.finalproject.safepickup.Repository.ParentRepository;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -96,14 +98,13 @@ public class ParentService {
         userRepository.delete(user);
     }
 
+    // 5- endpoint will be linked: parent-student-assignment
+    public List<ParentResponseDTO> findAllParentsForStudentAssignment() {
+        List<Parent> parents = parentRepository.findAll();
 
-    /* todo: 1- get All parent (parent-student assignment)
-     *      DTOout with: name-nationalId-phone-isAccepted
-    */
-
-
-    // todo: find parent by his name (filtering)
-
-
+        return parents.stream()
+                .map(ParentResponseDTO::new)
+                .collect(Collectors.toList());
+    }
 
 }

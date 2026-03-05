@@ -45,4 +45,9 @@ public class StudentController {
         studentService.deleteStudent(studentId);
         return ResponseEntity.status(200).body(new ApiResponse("Student deleted successfully"));
     }
+
+    @GetMapping("/parent/assignment")
+    public ResponseEntity<?>  findAllStudentForStudentAssignment() {
+        return ResponseEntity.status(200).body(studentService.findAllStudentForStudentAssignment());
+    }
 }
