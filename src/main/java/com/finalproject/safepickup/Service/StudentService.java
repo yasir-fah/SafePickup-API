@@ -2,6 +2,7 @@ package com.finalproject.safepickup.Service;
 
 import com.finalproject.safepickup.Api.ApiException;
 import com.finalproject.safepickup.DTOin.StudentDTO;
+import com.finalproject.safepickup.DTOout.StudentResponseDTO;
 import com.finalproject.safepickup.Model.Parent;
 import com.finalproject.safepickup.Model.Student;
 import com.finalproject.safepickup.Repository.ParentRepository;
@@ -10,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -103,5 +105,17 @@ public class StudentService {
 
         // 2- Delete
         studentRepository.delete(student);
+    }
+
+
+    // 6- endpoint will be used in UI
+    public List<StudentResponseDTO> findAllStudentForStudentAssignment() {
+        List<Student> students = studentRepository.findAll();
+        if (students.isEmpty()) {
+            throw new ApiException("Students not found");
+        }
+        return students.stream()
+                .map(StudentResponseDTO::new)
+                .collect(Collectors.toList());
     }
 }
