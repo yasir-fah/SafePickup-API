@@ -111,9 +111,6 @@ public class StudentService {
     // 6- endpoint will be used in UI
     public List<StudentResponseDTO> findAllStudentForStudentAssignment() {
         List<Student> students = studentRepository.findAll();
-        if (students.isEmpty()) {
-            throw new ApiException("Students not found");
-        }
         return students.stream()
                 .map(StudentResponseDTO::new)
                 .collect(Collectors.toList());

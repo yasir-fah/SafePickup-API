@@ -19,7 +19,7 @@ public class ParentResponseDTO {
     // Constructor from Parent entity
     public ParentResponseDTO(Parent parent) {
         this.id = parent.getId();
-        this.username = parent.getUser().getUsername();
+        this.username = parent.getUser() != null ? parent.getUser().getUsername() : null;
         this.nationalId = parent.getNationalId();
         this.phone = parent.getPhone();
         this.status = parent.isAccepted() ? "approved" : "pending";

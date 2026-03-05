@@ -101,9 +101,6 @@ public class ParentService {
     // 5- endpoint will be linked: parent-student-assignment
     public List<ParentResponseDTO> findAllParentsForStudentAssignment() {
         List<Parent> parents = parentRepository.findAll();
-        if(parents.isEmpty()) {
-            throw new ApiException("no parents found");
-        }
 
         return parents.stream()
                 .map(ParentResponseDTO::new)

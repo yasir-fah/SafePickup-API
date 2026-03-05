@@ -10,11 +10,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class StudentResponseDTO {
 
+    private Integer id;
     private String username;
     private String grade;
 
     // Constructor from Student entity
     public StudentResponseDTO(Student student) {
+        this.id = student.getId();
         this.username = student.getName();
         this.grade = student.getGrade();
     }
