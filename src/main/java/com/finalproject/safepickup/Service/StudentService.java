@@ -1,7 +1,6 @@
 package com.finalproject.safepickup.Service;
 
 import com.finalproject.safepickup.Api.ApiException;
-import com.finalproject.safepickup.Api.ApiResponse;
 import com.finalproject.safepickup.DTOin.StudentDTO;
 import com.finalproject.safepickup.Model.Parent;
 import com.finalproject.safepickup.Model.Student;
@@ -23,35 +22,46 @@ public class StudentService {
         return studentRepository.findAll();
     }
 
+    // endpoint will be linked: add new student account
     public void addStudent(StudentDTO dto) {
-        // 1- check if parent with this ID exist
-        Parent parent = parentRepository.findParentByNationalId(dto.getParentNationalId());
 
-        if (parent == null) {
-            throw new ApiException("Parent not found");
-        }
-
-        // 2- check if parent accepted
-        if(!parent.isAccepted()){
-            throw new ApiException("Parent not accepted Yet");
-        }
-
-        // 3- create new student
+        // create new student
         Student student = new Student();
         student.setName(dto.getName());
         student.setGrade(dto.getGrade());
         student.setSchoolLat(dto.getSchoolLat());
         student.setSchoolLon(dto.getSchoolLon());
 
-        // 4- link parent
-        student.setParent(parent);
-
-        // 5- save
         studentRepository.save(student);
     }
 
-    // 3- Update student
-    public void updateStudent(Integer studentId, StudentDTO dto) {
+    // endpoint will be linked: Link student
+    public String linkParentAndStudent(int parent_id,int student_id){
+
+        Parent parent = parentRepository.findParentById(parent_id);
+        if(parent==null){
+            throw new ApiException("Parent not found");
+        }
+
+        if(!parent.isAccepted()){
+            throw new ApiException("Parent not accepted");
+        }
+
+        Student student = studentRepository.findStudentById(student_id);
+        if(student==null){
+            throw new ApiException("Student not found");
+        }
+
+        // 4- link parent
+        student.setParent(parent);
+        studentRepository.save(student);
+
+        return parent.getUser().getUsername();
+    }
+
+
+    // 4- Update student
+    public void updateStudent(Integer parentId,Integer studentId, StudentDTO dto) {
         // 1- Find existing student
         Student oldStudent = studentRepository.findStudentById(studentId);
         if(oldStudent == null) {
@@ -59,10 +69,10 @@ public class StudentService {
         }
 
         // 2- Find parent by national ID
-        Parent parent = parentRepository.findParentByNationalId(dto.getParentNationalId());
+        Parent parent = parentRepository.findParentById(parentId);
 
         if(parent == null) {
-            throw new ApiException("Parent with National ID " + dto.getParentNationalId() + " not found");
+            throw new ApiException("Parent with  ID " + parentId + " not found");
         }
 
         // 3- Check if parent is accepted
@@ -83,7 +93,7 @@ public class StudentService {
         studentRepository.save(oldStudent);
     }
 
-    // 4- Delete student
+    // 5- Delete student
     public void deleteStudent(Integer studentId) {
         // 1- Find existing student
         Student student = studentRepository.findStudentById(studentId);

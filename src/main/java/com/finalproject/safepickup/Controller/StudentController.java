@@ -20,16 +20,23 @@ public class StudentController {
         return ResponseEntity.status(200).body(studentService.findAll());
     }
 
-    @PostMapping("/add/student")
+    @PostMapping("/add/new/student")
     public ResponseEntity<?> addStudent(@Valid @RequestBody StudentDTO studentDTO) {
         studentService.addStudent(studentDTO);
         return ResponseEntity.status(200).body(new ApiResponse("Student added successfully"));
     }
 
-    @PutMapping("/update/student/{studentId}")
+    @PutMapping("/link/parent/{parent_id}/and/student/{student_id}")
+    public ResponseEntity<?> linkParentAndStudent(@PathVariable Integer parent_id,@PathVariable Integer student_id) {
+        String result = studentService.linkParentAndStudent(parent_id, student_id);
+        return  ResponseEntity.status(200).body(new ApiResponse("Student linked Successfully to "+ result));
+    }
+
+    @PutMapping("/update/student/{studentId}/parent/{parent_id}")
     public ResponseEntity<?> updateStudent(@PathVariable Integer studentId,
+                                           @PathVariable Integer parent_id,
                                            @RequestBody @Valid StudentDTO dto) {
-        studentService.updateStudent(studentId, dto);
+        studentService.updateStudent(parent_id,studentId, dto);
         return ResponseEntity.status(200).body(new ApiResponse("Student updated successfully"));
     }
 
