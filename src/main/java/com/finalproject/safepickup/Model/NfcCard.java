@@ -30,7 +30,7 @@ public class NfcCard {
     private String status = "FREE";
 
     @Column(updatable = false)
-    private LocalDateTime issuedAt; //todo: issued when (connected with student)
+    private LocalDateTime issuedAt;
 
     /* Relationships:   */
 

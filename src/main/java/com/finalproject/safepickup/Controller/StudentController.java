@@ -50,4 +50,11 @@ public class StudentController {
     public ResponseEntity<?>  findAllStudentForStudentAssignment() {
         return ResponseEntity.status(200).body(studentService.findAllStudentForStudentAssignment());
     }
+
+    @PostMapping("/link/student/{studentId}/nfc/{nfcId}")
+    public ResponseEntity<?> linkStudentWithNfc(@PathVariable Integer studentId,
+                                                @PathVariable Integer nfcId) {
+        String studentName = studentService.linkStudentWithNfc(studentId, nfcId);
+        return ResponseEntity.status(200).body(new ApiResponse("NFC Card linked successfully to " + studentName));
+    }
 }

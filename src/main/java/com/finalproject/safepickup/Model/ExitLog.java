@@ -21,13 +21,6 @@ public class ExitLog {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    // add student id (many-to-one)
-
-    // add parent id (man@y-to-one)
-
-    // add NfcCard id (many-to-one)
-
-
     @Column(updatable = false)
     private LocalDateTime ScanTime;
 

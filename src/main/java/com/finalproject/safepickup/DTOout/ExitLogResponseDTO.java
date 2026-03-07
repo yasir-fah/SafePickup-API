@@ -15,17 +15,13 @@ public class ExitLogResponseDTO {
     private String studentName;
     private String nfcUid;
     private LocalDateTime requestTime;
-    private Boolean status;
+    private String status;
 
     // Constructor from ExitLog entity
     public ExitLogResponseDTO(ExitLog exitLog) {
-        this.studentName = exitLog.getStudent() != null ?
-                exitLog.getStudent().getName() : "N/A";
-
-        this.nfcUid = exitLog.getNfcCard() != null ?
-                exitLog.getNfcCard().getUid() : "N/A";
-
+        this.studentName = exitLog.getStudent().getName();
+        this.nfcUid = exitLog.getNfcCard().getUid();
         this.requestTime = exitLog.getRequestTime();
-        this.status = exitLog.isIsAccepted();
+        this.status = exitLog.isIsAccepted() ? "approved" : "rejected";
     }
 }

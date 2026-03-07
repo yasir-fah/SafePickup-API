@@ -16,7 +16,9 @@ import java.util.stream.Collectors;
 public class NfcCardService {
     private final NfcCardRepository nfcCardRepository;
 
-    // 1- Get all NFC cards (returns DTOs)
+    /* endpoint will be linked: available NFC cards
+     * this for show available NFC cards
+     */
     public List<NfcCardResponseDTO> findAll() {
         List<NfcCard> nfcCards = nfcCardRepository.findAll();
         return nfcCards.
