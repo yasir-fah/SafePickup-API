@@ -11,6 +11,7 @@ import com.finalproject.safepickup.Repository.ParentRepository;
 import com.finalproject.safepickup.Repository.StudentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -129,6 +130,7 @@ public class StudentService {
     /* 7- endpoint will be used in UI
      * this will allow us to connect student with NFC card
      */
+    @Transactional
     public String linkStudentWithNfc(Integer studentId, Integer nfcId) {
         Student student = studentRepository.findStudentById(studentId);
         if (student == null) {

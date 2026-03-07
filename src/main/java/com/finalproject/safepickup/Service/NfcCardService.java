@@ -33,7 +33,7 @@ public class NfcCardService {
         // 1- Create NFC card
         NfcCard nfcCard = new NfcCard();
         nfcCard.setUid(dto.getUid());
-        nfcCard.setStatus(dto.getStatus());
+        nfcCard.setStatus(dto.getStatus().toUpperCase());
 
         // 2- Save
         nfcCardRepository.save(nfcCard);

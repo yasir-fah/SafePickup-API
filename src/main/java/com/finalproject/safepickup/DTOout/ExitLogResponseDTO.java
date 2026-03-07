@@ -19,8 +19,8 @@ public class ExitLogResponseDTO {
 
     // Constructor from ExitLog entity
     public ExitLogResponseDTO(ExitLog exitLog) {
-        this.studentName = exitLog.getStudent().getName();
-        this.nfcUid = exitLog.getNfcCard().getUid();
+        this.studentName = exitLog.getStudent() == null ? "" : exitLog.getStudent().getName();
+        this.nfcUid = exitLog.getNfcCard() == null ? "" : exitLog.getNfcCard().getUid();
         this.requestTime = exitLog.getRequestTime();
         this.status = exitLog.isIsAccepted() ? "approved" : "rejected";
     }
