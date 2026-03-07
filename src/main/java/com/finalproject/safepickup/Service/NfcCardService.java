@@ -16,7 +16,9 @@ import java.util.stream.Collectors;
 public class NfcCardService {
     private final NfcCardRepository nfcCardRepository;
 
-    // 1- Get all NFC cards (returns DTOs)
+    /* endpoint will be linked: available NFC cards
+     * this for show available NFC cards
+     */
     public List<NfcCardResponseDTO> findAll() {
         List<NfcCard> nfcCards = nfcCardRepository.findAll();
         return nfcCards.
@@ -31,7 +33,7 @@ public class NfcCardService {
         // 1- Create NFC card
         NfcCard nfcCard = new NfcCard();
         nfcCard.setUid(dto.getUid());
-        nfcCard.setStatus(dto.getStatus());
+        nfcCard.setStatus(dto.getStatus().toUpperCase());
 
         // 2- Save
         nfcCardRepository.save(nfcCard);

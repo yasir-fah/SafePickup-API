@@ -3,13 +3,17 @@ package com.finalproject.safepickup.Service;
 import com.finalproject.safepickup.Api.ApiException;
 import com.finalproject.safepickup.DTOin.StudentDTO;
 import com.finalproject.safepickup.DTOout.StudentResponseDTO;
+import com.finalproject.safepickup.Model.NfcCard;
 import com.finalproject.safepickup.Model.Parent;
 import com.finalproject.safepickup.Model.Student;
+import com.finalproject.safepickup.Repository.NfcCardRepository;
 import com.finalproject.safepickup.Repository.ParentRepository;
 import com.finalproject.safepickup.Repository.StudentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -18,13 +22,16 @@ import java.util.stream.Collectors;
 public class StudentService {
     private final StudentRepository studentRepository;
     private final ParentRepository parentRepository;
+    private final NfcCardRepository nfcCardRepository;
 
     // 1- get all student
     public List<Student> findAll() {
         return studentRepository.findAll();
     }
 
-    // endpoint will be linked: add new student account
+    /* endpoint will be linked: add new student account
+     * this for register new student to the system
+     */
     public void addStudent(StudentDTO dto) {
 
         // create new student
@@ -37,20 +44,22 @@ public class StudentService {
         studentRepository.save(student);
     }
 
-    // endpoint will be linked: Link student
-    public String linkParentAndStudent(int parent_id,int student_id){
+    /* endpoint will be linked: Link student
+     * this will be the <button = Link /> where we link parent with student
+     */
+    public String linkParentAndStudent(int parent_id, int student_id) {
 
         Parent parent = parentRepository.findParentById(parent_id);
-        if(parent==null){
+        if (parent == null) {
             throw new ApiException("Parent not found");
         }
 
-        if(!parent.isAccepted()){
+        if (!parent.isAccepted()) {
             throw new ApiException("Parent not accepted");
         }
 
         Student student = studentRepository.findStudentById(student_id);
-        if(student==null){
+        if (student == null) {
             throw new ApiException("Student not found");
         }
 
@@ -63,22 +72,22 @@ public class StudentService {
 
 
     // 4- Update student
-    public void updateStudent(Integer parentId,Integer studentId, StudentDTO dto) {
+    public void updateStudent(Integer parentId, Integer studentId, StudentDTO dto) {
         // 1- Find existing student
         Student oldStudent = studentRepository.findStudentById(studentId);
-        if(oldStudent == null) {
+        if (oldStudent == null) {
             throw new ApiException("Student not found");
         }
 
         // 2- Find parent by national ID
         Parent parent = parentRepository.findParentById(parentId);
 
-        if(parent == null) {
+        if (parent == null) {
             throw new ApiException("Parent with  ID " + parentId + " not found");
         }
 
         // 3- Check if parent is accepted
-        if(!parent.isAccepted()) {
+        if (!parent.isAccepted()) {
             throw new ApiException("Parent account is not yet accepted by admin");
         }
 
@@ -99,7 +108,7 @@ public class StudentService {
     public void deleteStudent(Integer studentId) {
         // 1- Find existing student
         Student student = studentRepository.findStudentById(studentId);
-        if(student == null) {
+        if (student == null) {
             throw new ApiException("Student not found");
         }
 
@@ -108,11 +117,42 @@ public class StudentService {
     }
 
 
-    // 6- endpoint will be used in UI
+    /* 6- endpoint will be used in UI
+     * this will return list of student for link(student & NFCs)
+     */
     public List<StudentResponseDTO> findAllStudentForStudentAssignment() {
         List<Student> students = studentRepository.findAll();
         return students.stream()
                 .map(StudentResponseDTO::new)
                 .collect(Collectors.toList());
+    }
+
+    /* 7- endpoint will be used in UI
+     * this will allow us to connect student with NFC card
+     */
+    @Transactional
+    public String linkStudentWithNfc(Integer studentId, Integer nfcId) {
+        Student student = studentRepository.findStudentById(studentId);
+        if (student == null) {
+            throw new ApiException("Student not found");
+        }
+
+        NfcCard nfc = nfcCardRepository.findNfcCardById(nfcId);
+        if (nfc == null) {
+            throw new ApiException("NfcCard not found");
+        }
+
+        if (nfc.getStatus().equals("FREE")) {
+            nfc.setIssuedAt(LocalDateTime.now());
+            nfc.setStatus("RESERVED");
+            nfc.setStudent(student);
+
+            nfcCardRepository.save(nfc);
+        }
+        else {
+            throw new ApiException("Nfc Card is Reserved");
+        }
+
+        return student.getName();
     }
 }

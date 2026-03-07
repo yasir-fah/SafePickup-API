@@ -98,9 +98,11 @@ public class ParentService {
         userRepository.delete(user);
     }
 
-    // 5- endpoint will be linked: parent-student-assignment
+    /* 5- endpoint will be linked: parent-student-assignment
+    * service will return list of available parent (accepted)
+    * */
     public List<ParentResponseDTO> findAllParentsForStudentAssignment() {
-        List<Parent> parents = parentRepository.findAll();
+        List<Parent> parents = parentRepository.findParentByAccepted();
 
         return parents.stream()
                 .map(ParentResponseDTO::new)
