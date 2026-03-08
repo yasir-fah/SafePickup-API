@@ -47,5 +47,12 @@ public class ParentController {
         return ResponseEntity.status(200).body(parentService.findAllParentsForStudentAssignment());
     }
 
+    @GetMapping("/congestion/overview/parent/{parent_id}/student/{student_id}")
+    public ResponseEntity<?> getCongestionOverview(@PathVariable Integer parent_id,
+                                                   @PathVariable Integer student_id) {
+        return ResponseEntity.status(200).
+                body(parentService.getTrafficDataForParent(parent_id,student_id));
+    }
+
 
 }
