@@ -2,24 +2,33 @@ package com.finalproject.safepickup.Service;
 
 import com.finalproject.safepickup.Api.ApiException;
 import com.finalproject.safepickup.DTOin.ParentDTO;
+import com.finalproject.safepickup.DTOout.CongestionResultDto;
 import com.finalproject.safepickup.DTOout.ParentResponseDTO;
 import com.finalproject.safepickup.Model.Parent;
+import com.finalproject.safepickup.Model.Student;
 import com.finalproject.safepickup.Model.User;
 import com.finalproject.safepickup.Repository.ParentRepository;
+import com.finalproject.safepickup.Repository.StudentRepository;
 import com.finalproject.safepickup.Repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import tools.jackson.databind.JsonNode;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ParentService {
 
     private final UserRepository userRepository;
     private final ParentRepository parentRepository;
+    private final StudentRepository studentRepository;
+
+    private final CongestionService congestionService;
 
     // 1- get All parent
     public List<Parent> findAll() {
@@ -41,7 +50,7 @@ public class ParentService {
         Parent parent = new Parent();
         parent.setNationalId(dto.getNationalId());
         parent.setPhone(dto.getPhone());
-         // is accepted is false by default  todo: admin should accept Parent accounts
+        // is accepted is false by default  todo: admin should accept Parent accounts
 
         // 3- link parent & user
         user.setParent(parent);
@@ -57,13 +66,13 @@ public class ParentService {
     public void updateParent(Integer parentId, ParentDTO dto) {
         // 1- Find existing parent
         Parent oldParent = parentRepository.findParentById(parentId);
-        if(oldParent == null) {
+        if (oldParent == null) {
             throw new ApiException("Parent not found");
         }
 
         // 2- Get the associated user
         User user = oldParent.getUser();
-        if(user == null) {
+        if (user == null) {
             throw new ApiException("Associated user not found");
         }
 
@@ -86,11 +95,11 @@ public class ParentService {
     public void deleteParent(Integer parentId) {
         // 1- Find existing parent
         Parent parent = parentRepository.findParentById(parentId);
-        if(parent == null) {
+        if (parent == null) {
             throw new ApiException("Parent not found");
         }
 
-        if(parent.getUser() == null) {
+        if (parent.getUser() == null) {
             throw new ApiException("Associated user not found");
         }
         // 2- delete
@@ -99,8 +108,8 @@ public class ParentService {
     }
 
     /* 5- endpoint will be linked: parent-student-assignment
-    * service will return list of available parent (accepted)
-    * */
+     * service will return list of available parent
+     * */
     public List<ParentResponseDTO> findAllParentsForStudentAssignment() {
         List<Parent> parents = parentRepository.findParentByAccepted();
 
@@ -109,4 +118,91 @@ public class ParentService {
                 .collect(Collectors.toList());
     }
 
+    /* 6- endpoint will be linked at UI
+     * service will return the result of HERE API(congestion overview) nearby of his students school
+     * */
+    public CongestionResultDto getTrafficDataForParent(Integer parentId, Integer studentId) {
+        Parent parent = parentRepository.findParentById(parentId);
+        if (parent == null) {
+            throw new ApiException("Parent not found");
+        }
+
+        Student student = studentRepository.findStudentById(studentId);
+        if (student == null) {
+            throw new ApiException("Student not found");
+        }
+
+        if (student.getParent() == null) {
+            throw new ApiException("Associated parent not found");
+        }
+
+        if (parent.getUser() == null) {
+            throw new ApiException("Associated student not found");
+        }
+
+        if (student.getParent().getId().equals(parent.getId())) {
+            // grab student info
+            double lat = student.getSchoolLat();
+            double lon = student.getSchoolLon();
+
+            // call API
+            JsonNode rawResult = congestionService.getTrafficFlow(lat, lon, 40);
+            return calculateCongestionAvg(rawResult);
+        }
+        else {
+            throw new ApiException("Student and Parent Are Not Related");
+        }
+    }
+
+    // helper method for 'getTrafficDataForParent' - calculates average congestion
+    public CongestionResultDto calculateCongestionAvg(JsonNode rawResponse) {
+        JsonNode results = rawResponse.get("results");
+
+        if (results == null || !results.isArray() || results.isEmpty()) {
+            log.info("No results found");
+            return CongestionResultDto.builder()
+                    .avgJamFactor(0.0)
+                    .status("unknown")
+                    .build();
+        }
+
+        List<Double> avgJamFactors = new ArrayList<>();
+        log.info("start loop through results");
+        for (JsonNode result : results) {
+            JsonNode currentFlow = result.get("currentFlow");
+            if (currentFlow != null && currentFlow.has("jamFactor")) {
+                avgJamFactors.add(currentFlow.get("jamFactor").asDouble());
+            }
+        }
+
+        if (avgJamFactors.isEmpty()) {
+            log.info("average jam factor is empty");
+            return CongestionResultDto.builder()
+                    .avgJamFactor(0.0)
+                    .status("unknown")
+                    .build();
+        }
+
+        double avg = avgJamFactors.stream()
+                .mapToDouble(Double::doubleValue)
+                .average()
+                .orElse(0.0);
+        log.info("average jam factor is " + avg);
+
+        String status = "unknown";
+        if (avg <= 3.0) {
+            status = "low congestion";
+        }
+        else if (avg <= 5.0) {
+            status = "medium congestion";
+        }
+        else {
+            status = "high congestion";
+        }
+        CongestionResultDto resultDto = new CongestionResultDto();
+        resultDto.setAvgJamFactor(avg);
+        resultDto.setStatus(status);
+
+        return resultDto;
+    }
 }
