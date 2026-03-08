@@ -1,6 +1,7 @@
 package com.finalproject.safepickup.Controller;
 
 import com.finalproject.safepickup.Api.ApiResponse;
+import com.finalproject.safepickup.DTOin.ExitRequestDTO;
 import com.finalproject.safepickup.DTOin.ParentDTO;
 import com.finalproject.safepickup.DTOout.ParentResponseDTO;
 import com.finalproject.safepickup.Service.ParentService;
@@ -31,7 +32,7 @@ public class ParentController {
 
     @PutMapping("/update/parent/{parentId}")
     public ResponseEntity<?> updateParent(@PathVariable Integer parentId,
-                                       @RequestBody @Valid ParentDTO dto) {
+                                          @RequestBody @Valid ParentDTO dto) {
         parentService.updateParent(parentId, dto);
         return ResponseEntity.status(200).body(new ApiResponse("Parent updated successfully"));
     }
@@ -51,7 +52,15 @@ public class ParentController {
     public ResponseEntity<?> getCongestionOverview(@PathVariable Integer parent_id,
                                                    @PathVariable Integer student_id) {
         return ResponseEntity.status(200).
-                body(parentService.getTrafficDataForParent(parent_id,student_id));
+                body(parentService.getTrafficDataForParent(parent_id, student_id));
+    }
+
+    @PostMapping("/exit/request/parent/{parent_id}/student/{student_id}")
+    public ResponseEntity<?> parentExitRequest(@PathVariable Integer parent_id,
+                                               @PathVariable Integer student_id,
+                                               @Valid @RequestBody ExitRequestDTO dto) {
+        parentService.parentExitRequest(parent_id, student_id, dto);
+        return ResponseEntity.status(200).body(new ApiResponse("Parent exit requested successfully"));
     }
 
 
