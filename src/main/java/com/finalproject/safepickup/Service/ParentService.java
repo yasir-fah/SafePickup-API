@@ -226,6 +226,10 @@ public class ParentService {
             throw new ApiException("Student not found");
         }
 
+        if (student.getParent() == null) {
+            throw new ApiException("Student has no associated parent");
+        }
+
         // 3- Verify student belongs to this parent
         if (!student.getParent().getId().equals(parentId)) {
             throw new ApiException("This student does not belong to you");
