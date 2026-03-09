@@ -1,20 +1,18 @@
 package com.finalproject.safepickup.Service;
 
 import com.finalproject.safepickup.Api.ApiException;
+import com.finalproject.safepickup.DTOin.ExitRequestDTO;
 import com.finalproject.safepickup.DTOin.ParentDTO;
 import com.finalproject.safepickup.DTOout.CongestionResultDto;
 import com.finalproject.safepickup.DTOout.ParentResponseDTO;
-import com.finalproject.safepickup.Model.Parent;
-import com.finalproject.safepickup.Model.Student;
-import com.finalproject.safepickup.Model.User;
-import com.finalproject.safepickup.Repository.ParentRepository;
-import com.finalproject.safepickup.Repository.StudentRepository;
-import com.finalproject.safepickup.Repository.UserRepository;
+import com.finalproject.safepickup.Model.*;
+import com.finalproject.safepickup.Repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import tools.jackson.databind.JsonNode;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -27,8 +25,13 @@ public class ParentService {
     private final UserRepository userRepository;
     private final ParentRepository parentRepository;
     private final StudentRepository studentRepository;
+    private final ExitLogRepository exitLogRepository;
+    private final NfcCardRepository nfcCardRepository;
 
     private final CongestionService congestionService;
+
+    //  maximum allowed distance between parent & school (1.5 km)
+    private static final int MAX_ALLOWED_DISTANCE_METERS = 1500;
 
     // 1- get All parent
     public List<Parent> findAll() {
@@ -204,5 +207,80 @@ public class ParentService {
         resultDto.setStatus(status);
 
         return resultDto;
+    }
+
+    /* 7- endpoint will be linked at UI
+     * service used when parent ask for student request for his student
+     * */
+    public void parentExitRequest(Integer parentId, Integer studentId, ExitRequestDTO dto) {
+
+        // 1- Find parent
+        Parent parent = parentRepository.findParentById(parentId);
+        if (parent == null) {
+            throw new ApiException("Parent not found");
+        }
+
+        // 2- Find student
+        Student student = studentRepository.findStudentById(studentId);
+        if (student == null) {
+            throw new ApiException("Student not found");
+        }
+
+        if (student.getParent() == null) {
+            throw new ApiException("Student has no associated parent");
+        }
+
+        // 3- Verify student belongs to this parent
+        if (!student.getParent().getId().equals(parentId)) {
+            throw new ApiException("This student does not belong to you");
+        }
+
+        // check if student has NFC & link to log
+        NfcCard nfc = nfcCardRepository.findNfcCardByStudent_Id(student.getId());
+        if(nfc == null) {
+            throw new ApiException("NFC Card not found");
+        }
+
+        // 4- Check if there's already an active request
+        ExitLog activeRequest = exitLogRepository
+                .findActiveRequestForStudent(studentId, LocalDateTime.now());
+
+        if (activeRequest != null) {
+            throw new ApiException("There is already an active exit request for this student");
+        }
+
+        // 5- Calculate distance between parent and school (helper method)
+        int distanceInMeters = DistanceCalculator.calculateDistance(
+                dto.getParentLat(),
+                dto.getParentLon(),
+                student.getSchoolLat(),
+                student.getSchoolLon()
+        );
+
+        // 6- Check if parent is within 1.5km
+        boolean isWithinRadius = distanceInMeters <= MAX_ALLOWED_DISTANCE_METERS;
+
+
+        // 7- Create exit log
+        ExitLog exitLog = new ExitLog();
+        exitLog.setParent(parent);
+        exitLog.setStudent(student);
+        exitLog.setRequestTime(LocalDateTime.now());
+        exitLog.setExpiresAt(LocalDateTime.now().plusMinutes(10));
+        exitLog.setParentLat(dto.getParentLat().toString());
+        exitLog.setParentLon(dto.getParentLon().toString());
+        exitLog.setNfcCard(nfc);
+        exitLog.setIsAccepted(isWithinRadius);
+
+        // 8- Save
+        exitLogRepository.save(exitLog);
+
+        // 9- Throw error if rejected
+        if (!isWithinRadius) {
+            throw new ApiException(
+                    String.format("Exit request rejected. You are %d meters away from school (maximum allowed: %d meters)",
+                            distanceInMeters, MAX_ALLOWED_DISTANCE_METERS)
+            );
+        }
     }
 }
