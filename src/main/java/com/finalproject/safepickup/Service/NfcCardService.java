@@ -3,11 +3,15 @@ package com.finalproject.safepickup.Service;
 import com.finalproject.safepickup.Api.ApiException;
 import com.finalproject.safepickup.DTOin.NfcCardDTO;
 import com.finalproject.safepickup.DTOout.NfcCardResponseDTO;
+import com.finalproject.safepickup.Model.ExitLog;
 import com.finalproject.safepickup.Model.NfcCard;
+import com.finalproject.safepickup.Model.Student;
+import com.finalproject.safepickup.Repository.ExitLogRepository;
 import com.finalproject.safepickup.Repository.NfcCardRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -15,6 +19,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class NfcCardService {
     private final NfcCardRepository nfcCardRepository;
+    private final ExitLogRepository exitLogRepository;
 
     /* endpoint will be linked: available NFC cards
      * this for show available NFC cards
@@ -63,6 +68,57 @@ public class NfcCardService {
             throw new ApiException("NfcCard not found");
         }
         nfcCardRepository.delete(nfcCard);
+    }
+
+    /* 5- endpoint will be linked at UI
+     * service used when student scan his nfc card to reader
+     * */
+    public String processNfcScan(String uid) {
+
+        // 1- Find NFC card by UID
+        NfcCard nfcCard = nfcCardRepository.findNfcCardByUid(uid);
+        if (nfcCard == null) {
+            throw new ApiException("Invalid NFC card");
+        }
+
+        // 2- Check if NFC card is linked to a student
+        Student student = nfcCard.getStudent();
+        if (student == null) {
+            throw new ApiException("NFC card is not assigned to any student");
+        }
+
+        // 3- Find active approved exit request for this student
+        ExitLog activeRequest = exitLogRepository.findActiveApprovedRequest(
+                student.getId(),
+                LocalDateTime.now()
+        );
+
+        if (activeRequest == null) {
+            // No valid request found - create rejected log
+            ExitLog rejectedLog = new ExitLog();
+            rejectedLog.setStudent(student);
+            rejectedLog.setParent(student.getParent());
+            rejectedLog.setNfcCard(nfcCard);
+            rejectedLog.setScanTime(LocalDateTime.now());
+            rejectedLog.setIsAccepted(false);
+
+            exitLogRepository.save(rejectedLog);
+
+            throw new ApiException("Exit denied. No valid exit request found or request expired");
+        }
+
+        // 4- Valid request found - update scan time and link NFC card
+        int id =  activeRequest.getId();
+        System.out.println("id of active log: "+id);
+        activeRequest.setScanTime(LocalDateTime.now());
+//        activeRequest.setNfcCard(nfcCard);
+
+        exitLogRepository.save(activeRequest);
+
+        // 5- Return success message with student name
+        // todo: send message to parent that his child scan the NFC
+        System.out.print("student scanned successfully");
+        return student.getName();
     }
 
 }

@@ -8,4 +8,6 @@ public interface NfcCardRepository extends JpaRepository<NfcCard, Integer> {
     NfcCard findNfcCardById(Integer id);
 
     NfcCard findNfcCardByStudent_Id(Integer studentId);
+
+    NfcCard findNfcCardByUid(String uid);
 }

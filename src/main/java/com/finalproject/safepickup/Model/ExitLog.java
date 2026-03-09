@@ -21,7 +21,7 @@ public class ExitLog {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(updatable = false)
+    @Column(updatable = true)
     private LocalDateTime ScanTime;
 
     @Column(updatable = false)
