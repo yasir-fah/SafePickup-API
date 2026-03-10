@@ -59,9 +59,9 @@ public class NfcReader {
         HttpClient client = HttpClient.newHttpClient();
 
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(API_URL + uid))  // http://localhost:8080/api/v1/nfc/scan/A1B2C3D4
+                .uri(URI.create(API_URL + uid))  // http://localhost:8080/api/v1/nfc/scan/"UID"
                 .header("accept", "*/*")
-                .POST(HttpRequest.BodyPublishers.noBody())  // empty body as per your curl
+                .POST(HttpRequest.BodyPublishers.noBody())
                 .build();
 
         HttpResponse<String> response = client.send(request,
