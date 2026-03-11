@@ -238,7 +238,7 @@ public class ParentService {
         // check if student has NFC & link to log
         NfcCard nfc = nfcCardRepository.findNfcCardByStudent_Id(student.getId());
         if(nfc == null) {
-            throw new ApiException("NFC Card not found");
+            throw new ApiException("NFC Card not found, Student Does Not Has Tag Yet");
         }
 
         // 4- Check if there's already an active request

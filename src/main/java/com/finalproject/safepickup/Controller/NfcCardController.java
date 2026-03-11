@@ -38,4 +38,12 @@ public class NfcCardController {
         nfcCardService.deleteNfcCard(nfcCardId);
         return ResponseEntity.status(200).body(new ApiResponse("NFC Card deleted successfully"));
     }
+
+    @PostMapping("/scan/{uid}")
+    public ResponseEntity<?> scanNfcCard(@PathVariable String uid) {
+        String studentName = nfcCardService.processNfcScan(uid);
+        return ResponseEntity.status(200).body(
+                new ApiResponse("Exit approved for " + studentName)
+        );
+    }
 }
