@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import tools.jackson.databind.JsonNode;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -29,6 +30,7 @@ public class ParentService {
     private final NfcCardRepository nfcCardRepository;
 
     private final CongestionService congestionService;
+    private final TwilioVerifyService twilioVerifyService;
 
     //  maximum allowed distance between parent & school (1.5 km)
     private static final int MAX_ALLOWED_DISTANCE_METERS = 1500;
@@ -212,7 +214,7 @@ public class ParentService {
     /* 7- endpoint will be linked at UI
      * service used when parent ask for student request for his student
      * */
-    public void parentExitRequest(Integer parentId, Integer studentId, ExitRequestDTO dto) {
+    public ParentResponseDTO parentExitRequest(Integer parentId, Integer studentId, ExitRequestDTO dto) {
 
         // 1- Find parent
         Parent parent = parentRepository.findParentById(parentId);
@@ -237,7 +239,7 @@ public class ParentService {
 
         // check if student has NFC & link to log
         NfcCard nfc = nfcCardRepository.findNfcCardByStudent_Id(student.getId());
-        if(nfc == null) {
+        if (nfc == null) {
             throw new ApiException("NFC Card not found, Student Does Not Has Tag Yet");
         }
 
@@ -270,17 +272,117 @@ public class ParentService {
         exitLog.setParentLat(dto.getParentLat().toString());
         exitLog.setParentLon(dto.getParentLon().toString());
         exitLog.setNfcCard(nfc);
-        exitLog.setIsAccepted(isWithinRadius);
 
-        // 8- Save
-        exitLogRepository.save(exitLog);
+        // set IsAccepted by check OTP & isWithRadius are true
+        exitLog.setIsWithinRadius(isWithinRadius);
+        exitLog.setIsOtpVerified(false);
+        exitLog.setIsAccepted(false);
+        // TODO: add biometric auth
 
-        // 9- Throw error if rejected
+
+        // 9- Throw error if faraway
         if (!isWithinRadius) {
             throw new ApiException(
                     String.format("Exit request rejected. You are %d meters away from school (maximum allowed: %d meters)",
                             distanceInMeters, MAX_ALLOWED_DISTANCE_METERS)
             );
         }
+
+        // 8- Save
+        exitLogRepository.save(exitLog);
+
+        return new ParentResponseDTO(
+                parent.getId(),
+                parent.getUser().getUsername(),
+                parent.getNationalId(),
+                parent.getPhone(),
+                parent.isAccepted() ? "approved" : "pending"
+        );
+
     }
+
+    // helper method to extract phone number to format of: +966XXXXXXXXX
+    protected String extractedPhone(String phone) throws ApiException {
+        String format = "+966";
+        return phone.replaceFirst("0", "+966");
+    }
+
+    // TODO: delete 'parentId' when add security
+    public ParentResponseDTO askForOtp(Integer parentId) {
+
+        Parent parent = parentRepository.findParentById(parentId);
+        if (parent == null) {
+            throw new ApiException("Parent not found");
+        }
+
+
+        List<ExitLog> exitLogs = exitLogRepository.findPendingExitRequestsByParent(parentId, LocalDateTime.now());
+        if (exitLogs.isEmpty()) {
+            throw new ApiException("Parent has no active exit request for any student");
+        }
+
+        ExitLog exitLog = exitLogs.get(0);
+        if(exitLog.getLastOtpSentAt() != null) {
+            if (LocalDateTime.now().isBefore(exitLog.getLastOtpSentAt().plusMinutes(2))) {
+                var remainingTime =
+                        ChronoUnit.SECONDS.between(
+                                LocalDateTime.now(),
+                                exitLog.getLastOtpSentAt().plusMinutes(2)
+                        );
+                throw new ApiException("you should wait "+ remainingTime +"sec for next OTP");
+            }
+        }
+
+        // send OTP to parent phone number
+        String formatedNumber = extractedPhone(parent.getPhone());
+        twilioVerifyService.sendCode(formatedNumber);
+
+        // after successful OTP, add log for lastOtpSendAt
+        exitLog.setLastOtpSentAt(LocalDateTime.now());
+        exitLogRepository.save(exitLog);
+
+        return new ParentResponseDTO(
+                parent.getId(),
+                parent.getUser().getUsername(),
+                parent.getNationalId(),
+                parent.getPhone(),
+                parent.isAccepted() ? "approved" : "pending"
+        );
+    }
+
+    // TODO: delete 'parentId' when add security
+    public void verifyExitOTP(Integer parentId, String phoneNumber, String otpCode) {
+
+        // 1- Find parent's pending exit requests (not expired, waiting for OTP)
+        List<ExitLog> pendingRequests = exitLogRepository
+                .findPendingExitRequestsByParent(parentId, LocalDateTime.now());
+
+        if (pendingRequests.isEmpty()) {
+            throw new ApiException("No pending exit request found or request expired");
+        }
+
+        // Get the most recent request
+        ExitLog exitLog = pendingRequests.get(0);
+
+        // 2- Verify OTP via Twilio
+        String extractedPhone = extractedPhone(phoneNumber);
+        boolean isValid = twilioVerifyService.verifyCode(extractedPhone, otpCode);
+        if (!isValid) {
+            throw new ApiException("Invalid OTP");
+        }
+
+        // 4- Mark OTP as verified
+        exitLog.setIsOtpVerified(true);
+
+        // 5- Update final approval status
+        boolean distanceOk = exitLog.isIsWithinRadius();
+        boolean otpOk = exitLog.isIsOtpVerified();
+
+        if (distanceOk && otpOk) {
+            exitLog.setIsAccepted(true);
+        }
+        exitLogRepository.save(exitLog);
+    }
+
+    // TODO: add service receives Biometric results
 }

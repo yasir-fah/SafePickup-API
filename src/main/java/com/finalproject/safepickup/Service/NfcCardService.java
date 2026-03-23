@@ -88,7 +88,7 @@ public class NfcCardService {
         }
 
         // 3- Find active approved exit request for this student
-        ExitLog activeRequest = exitLogRepository.findActiveApprovedRequest(
+        ExitLog activeRequest = exitLogRepository.findActiveRequestForStudent(
                 student.getId(),
                 LocalDateTime.now()
         );
