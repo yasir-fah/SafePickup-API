@@ -42,10 +42,14 @@ public class TwilioVerifyService {
     }
 
     public boolean verifyCode(String phoneNumber, String code) {
-        VerificationCheck check = VerificationCheck.creator(serviceSid)
-                .setTo(phoneNumber)
-                .setCode(code)
-                .create();
-        return "approved".equals(check.getStatus());
+        try {
+            VerificationCheck check = VerificationCheck.creator(serviceSid)
+                    .setTo(phoneNumber)
+                    .setCode(code)
+                    .create();
+            return "approved".equals(check.getStatus());
+        } catch (Exception e) {
+            throw new ApiException(e.getMessage());
+        }
     }
 }
