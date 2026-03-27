@@ -5,8 +5,10 @@ import com.finalproject.safepickup.DTOin.ExitRequestDTO;
 import com.finalproject.safepickup.DTOin.ParentDTO;
 import com.finalproject.safepickup.DTOout.ParentResponseDTO;
 import com.finalproject.safepickup.Service.ParentService;
+import com.finalproject.safepickup.Service.TwilioVerifyService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,6 +20,8 @@ import java.util.List;
 public class ParentController {
 
     private final ParentService parentService;
+    @Autowired
+    private final TwilioVerifyService twilioVerifyService;
 
     @GetMapping("/get/parents")
     public ResponseEntity<?> getAllParent() {
@@ -63,5 +67,23 @@ public class ParentController {
         return ResponseEntity.status(200).body(new ApiResponse("Parent exit requested successfully"));
     }
 
+
+
+    @PostMapping("/send/{parent_id}")
+    public ResponseEntity<?> askForOTP(@PathVariable Integer parent_id) {
+        String username = parentService.askForOtp(parent_id).getUsername();
+        return ResponseEntity.ok("OTP sent to " + username);
+    }
+
+    @PostMapping("/verify-otp/parent/{parent_id}/phone/{phone}/otp/{otp}")
+    public ResponseEntity<?> verifyOTP(@PathVariable Integer parent_id,
+                                       @PathVariable String phone,
+                                       @PathVariable String otp
+                                       ) {
+        parentService.verifyExitOTP(parent_id, phone, otp);
+        return ResponseEntity.status(200).body(
+                new ApiResponse("OTP verified! Exit request approved for 10 minutes")
+        );
+    }
 
 }

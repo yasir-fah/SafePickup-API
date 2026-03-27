@@ -19,11 +19,12 @@ public interface ExitLogRepository extends JpaRepository<ExitLog,Integer> {
     ExitLog findActiveRequestForStudent(@Param("studentId") Integer studentId,
                                         @Param("now") LocalDateTime now);
 
-    // Find active approved request (for NFC scan)
-    @Query("SELECT e FROM ExitLog e WHERE e.student.Id = :studentId " +
-            "AND e.IsAccepted = true " +
+
+    @Query("SELECT e FROM ExitLog e WHERE e.parent.id = :parentId " +
+            "AND e.IsWithinRadius = true " +
+            "AND e.IsOtpVerified = false " +
             "AND e.ExpiresAt > :now " +
-            "AND e.ScanTime IS NULL")
-    ExitLog findActiveApprovedRequest(@Param("studentId") Integer studentId,
-                                      @Param("now") LocalDateTime now);
+            "ORDER BY e.RequestTime DESC")
+    List<ExitLog> findPendingExitRequestsByParent(@Param("parentId") Integer parentId,
+                                                  @Param("now") LocalDateTime now);
 }

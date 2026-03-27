@@ -29,9 +29,18 @@ public class ExitLog {
     private LocalDateTime RequestTime; // when parent request exit
 
     @Column(updatable = true)
-    private LocalDateTime ExpiresAt; // todo: calculated manually (add schedular)
+    private LocalDateTime ExpiresAt;
+
+    private LocalDateTime lastOtpSentAt;
 
     private boolean IsAccepted = false;
+
+    private boolean IsWithinRadius = false;
+
+    private boolean IsOtpVerified = false;
+
+    // private Boolean isBiometricVerified = false;  // TODO: Add later for biometric
+
 
     private String parentLat; // ask from UI
 
