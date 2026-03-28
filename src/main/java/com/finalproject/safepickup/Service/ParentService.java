@@ -9,6 +9,7 @@ import com.finalproject.safepickup.Model.*;
 import com.finalproject.safepickup.Repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import tools.jackson.databind.JsonNode;
 
@@ -31,6 +32,7 @@ public class ParentService {
 
     private final CongestionService congestionService;
     private final TwilioVerifyService twilioVerifyService;
+    private final PasswordEncoder passwordEncoder;
 
     //  maximum allowed distance between parent & school (1.5 km)
     private static final int MAX_ALLOWED_DISTANCE_METERS = 1500;
@@ -47,7 +49,7 @@ public class ParentService {
         // 1- adding user attribute
         User user = new User();
         user.setUsername(dto.getUsername());
-        user.setPassword(dto.getPassword());
+        user.setPassword(passwordEncoder.encode(dto.getPassword()));
         user.setEmail(dto.getEmail());
         user.setRole("PARENT");
 
@@ -67,7 +69,7 @@ public class ParentService {
     }
 
 
-    // 3- update a parent
+    // 3- update a parent (authenticated parent updates own profile)
     public void updateParent(Integer parentId, ParentDTO dto) {
         // 1- Find existing parent
         Parent oldParent = parentRepository.findParentById(parentId);
@@ -83,14 +85,16 @@ public class ParentService {
 
         // 3- Update user fields
         user.setUsername(dto.getUsername());
-        user.setPassword(dto.getPassword()); // todo: hashing at security
+        if (dto.getPassword() != null && !dto.getPassword().isEmpty()) {
+            user.setPassword(passwordEncoder.encode(dto.getPassword()));
+        }
         user.setEmail(dto.getEmail());
 
         // 4- Update parent fields
         oldParent.setNationalId(dto.getNationalId());
         oldParent.setPhone(dto.getPhone());
 
-        // 5- Save both (cascade should handle this, but being explicit)
+        // 5- Save both
         parentRepository.save(oldParent);
         userRepository.save(user);
     }
@@ -307,7 +311,6 @@ public class ParentService {
         return phone.replaceFirst("0", "+966");
     }
 
-    // TODO: delete 'parentId' when add security
     public ParentResponseDTO askForOtp(Integer parentId) {
 
         Parent parent = parentRepository.findParentById(parentId);
@@ -350,10 +353,15 @@ public class ParentService {
         );
     }
 
-    // TODO: delete 'parentId' when add security
-    public void verifyExitOTP(Integer parentId, String phoneNumber, String otpCode) {
+    public void verifyExitOTP(Integer parentId, String otpCode) {
 
-        // 1- Find parent's pending exit requests (not expired, waiting for OTP)
+        // 1- Find parent
+        Parent parent = parentRepository.findParentById(parentId);
+        if (parent == null) {
+            throw new ApiException("Parent not found");
+        }
+
+        // 2- Find parent's pending exit requests (not expired, waiting for OTP)
         List<ExitLog> pendingRequests = exitLogRepository
                 .findPendingExitRequestsByParent(parentId, LocalDateTime.now());
 
@@ -364,8 +372,8 @@ public class ParentService {
         // Get the most recent request
         ExitLog exitLog = pendingRequests.get(0);
 
-        // 2- Verify OTP via Twilio
-        String extractedPhone = extractedPhone(phoneNumber);
+        // 3- Verify OTP via Twilio using parent's phone from database
+        String extractedPhone = extractedPhone(parent.getPhone());
         boolean isValid = twilioVerifyService.verifyCode(extractedPhone, otpCode);
         if (!isValid) {
             throw new ApiException("Invalid OTP");

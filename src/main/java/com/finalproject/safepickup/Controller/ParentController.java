@@ -3,16 +3,13 @@ package com.finalproject.safepickup.Controller;
 import com.finalproject.safepickup.Api.ApiResponse;
 import com.finalproject.safepickup.DTOin.ExitRequestDTO;
 import com.finalproject.safepickup.DTOin.ParentDTO;
-import com.finalproject.safepickup.DTOout.ParentResponseDTO;
+import com.finalproject.safepickup.Model.User;
 import com.finalproject.safepickup.Service.ParentService;
-import com.finalproject.safepickup.Service.TwilioVerifyService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("api/v1/parent")
@@ -20,25 +17,12 @@ import java.util.List;
 public class ParentController {
 
     private final ParentService parentService;
-    @Autowired
-    private final TwilioVerifyService twilioVerifyService;
+
+    // ==================== ADMIN endpoints ====================
 
     @GetMapping("/get/parents")
     public ResponseEntity<?> getAllParent() {
         return ResponseEntity.status(200).body(parentService.findAll());
-    }
-
-    @PostMapping("/register")
-    public ResponseEntity<?> parentRegister(@Valid @RequestBody ParentDTO parentDTO) {
-        parentService.registerParent(parentDTO);
-        return ResponseEntity.status(200).body(new ApiResponse("you successfully registered !"));
-    }
-
-    @PutMapping("/update/parent/{parentId}")
-    public ResponseEntity<?> updateParent(@PathVariable Integer parentId,
-                                          @RequestBody @Valid ParentDTO dto) {
-        parentService.updateParent(parentId, dto);
-        return ResponseEntity.status(200).body(new ApiResponse("Parent updated successfully"));
     }
 
     @DeleteMapping("/delete/parent/{parentId}")
@@ -52,35 +36,40 @@ public class ParentController {
         return ResponseEntity.status(200).body(parentService.findAllParentsForStudentAssignment());
     }
 
-    @GetMapping("/congestion/overview/parent/{parent_id}/student/{student_id}")
-    public ResponseEntity<?> getCongestionOverview(@PathVariable Integer parent_id,
-                                                   @PathVariable Integer student_id) {
-        return ResponseEntity.status(200).
-                body(parentService.getTrafficDataForParent(parent_id, student_id));
+    // ==================== PARENT endpoints (self-operations) ====================
+
+    @PutMapping("/update")
+    public ResponseEntity<?> updateMyProfile(@AuthenticationPrincipal User user,
+                                             @RequestBody @Valid ParentDTO dto) {
+        parentService.updateParent(user.getId(), dto);
+        return ResponseEntity.status(200).body(new ApiResponse("Parent updated successfully"));
     }
 
-    @PostMapping("/exit/request/parent/{parent_id}/student/{student_id}")
-    public ResponseEntity<?> parentExitRequest(@PathVariable Integer parent_id,
-                                               @PathVariable Integer student_id,
+    @GetMapping("/congestion/overview/student/{studentId}")
+    public ResponseEntity<?> getCongestionOverview(@AuthenticationPrincipal User user,
+                                                   @PathVariable Integer studentId) {
+        return ResponseEntity.status(200).body(
+                parentService.getTrafficDataForParent(user.getId(), studentId));
+    }
+
+    @PostMapping("/exit/request/student/{studentId}")
+    public ResponseEntity<?> parentExitRequest(@AuthenticationPrincipal User user,
+                                               @PathVariable Integer studentId,
                                                @Valid @RequestBody ExitRequestDTO dto) {
-        parentService.parentExitRequest(parent_id, student_id, dto);
+        parentService.parentExitRequest(user.getId(), studentId, dto);
         return ResponseEntity.status(200).body(new ApiResponse("Parent exit requested successfully"));
     }
 
-
-
-    @PostMapping("/send/{parent_id}")
-    public ResponseEntity<?> askForOTP(@PathVariable Integer parent_id) {
-        String username = parentService.askForOtp(parent_id).getUsername();
+    @PostMapping("/send-otp")
+    public ResponseEntity<?> askForOTP(@AuthenticationPrincipal User user) {
+        String username = parentService.askForOtp(user.getId()).getUsername();
         return ResponseEntity.ok("OTP sent to " + username);
     }
 
-    @PostMapping("/verify-otp/parent/{parent_id}/phone/{phone}/otp/{otp}")
-    public ResponseEntity<?> verifyOTP(@PathVariable Integer parent_id,
-                                       @PathVariable String phone,
-                                       @PathVariable String otp
-                                       ) {
-        parentService.verifyExitOTP(parent_id, phone, otp);
+    @PostMapping("/verify-otp/{otp}")
+    public ResponseEntity<?> verifyOTP(@AuthenticationPrincipal User user,
+                                       @PathVariable String otp) {
+        parentService.verifyExitOTP(user.getId(), otp);
         return ResponseEntity.status(200).body(
                 new ApiResponse("OTP verified! Exit request approved for 10 minutes")
         );

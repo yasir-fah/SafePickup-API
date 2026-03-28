@@ -16,6 +16,9 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -99,6 +102,24 @@ public class ControllerAdvise {
     public ResponseEntity<?> NoResourceFoundException(NoResourceFoundException noResourceFoundException) {
         String message = noResourceFoundException.getMessage();
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse(message));
+    }
+
+    // Authentication Exception (bad credentials)
+    @ExceptionHandler(value = BadCredentialsException.class)
+    public ResponseEntity<ApiResponse> BadCredentialsException(BadCredentialsException ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse("Invalid username or password"));
+    }
+
+    // Authentication Exception (general)
+    @ExceptionHandler(value = AuthenticationException.class)
+    public ResponseEntity<ApiResponse> AuthenticationException(AuthenticationException ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse("Authentication failed"));
+    }
+
+    // Access Denied Exception (insufficient role)
+    @ExceptionHandler(value = AccessDeniedException.class)
+    public ResponseEntity<ApiResponse> AccessDeniedException(AccessDeniedException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ApiResponse("Access denied: insufficient permissions"));
     }
 
     // Generic Exception Handler - catch any unexpected exceptions
