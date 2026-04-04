@@ -1,11 +1,13 @@
 package com.finalproject.safepickup.Controller;
 
 import com.finalproject.safepickup.Api.ApiResponse;
+import com.finalproject.safepickup.Api.AuthToken;
 import com.finalproject.safepickup.DTOin.AdminDTO;
 import com.finalproject.safepickup.DTOin.LoginDTO;
 import com.finalproject.safepickup.DTOin.ParentDTO;
 import com.finalproject.safepickup.Model.User;
 import com.finalproject.safepickup.Service.AdminService;
+import com.finalproject.safepickup.Service.JwtService;
 import com.finalproject.safepickup.Service.ParentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthenticationManager authenticationManager;
+    private final JwtService jwtService;
     private final AdminService adminService;
     private final ParentService parentService;
 
@@ -37,7 +40,8 @@ public class AuthController {
             user.getAdmin().setLastLoginAt(java.time.LocalDateTime.now());
         }
 
-        return ResponseEntity.ok(new ApiResponse("Login successful! Role: " + user.getRole()));
+        String token = jwtService.generateToken(user);
+        return ResponseEntity.ok(new AuthToken(token));
     }
 
     @PostMapping("/register/admin")

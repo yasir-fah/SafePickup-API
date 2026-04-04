@@ -22,6 +22,9 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.security.SignatureException;
 
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.HashMap;
@@ -114,6 +117,24 @@ public class ControllerAdvise {
     @ExceptionHandler(value = AuthenticationException.class)
     public ResponseEntity<ApiResponse> AuthenticationException(AuthenticationException ex) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse("Authentication failed"));
+    }
+
+    // JWT Expired Exception
+    @ExceptionHandler(value = ExpiredJwtException.class)
+    public ResponseEntity<ApiResponse> ExpiredJwtException(ExpiredJwtException ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse("Token has expired"));
+    }
+
+    // JWT Malformed Exception
+    @ExceptionHandler(value = MalformedJwtException.class)
+    public ResponseEntity<ApiResponse> MalformedJwtException(MalformedJwtException ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse("Invalid token"));
+    }
+
+    // JWT Signature Exception
+    @ExceptionHandler(value = SignatureException.class)
+    public ResponseEntity<ApiResponse> SignatureException(SignatureException ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse("Invalid token signature"));
     }
 
     // Access Denied Exception (insufficient role)

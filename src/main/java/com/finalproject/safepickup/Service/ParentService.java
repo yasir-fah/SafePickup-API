@@ -57,8 +57,6 @@ public class ParentService {
         Parent parent = new Parent();
         parent.setNationalId(dto.getNationalId());
         parent.setPhone(dto.getPhone());
-        // is accepted is false by default  todo: admin should accept Parent accounts
-
         // 3- link parent & user
         user.setParent(parent);
         parent.setUser(user);
@@ -120,7 +118,7 @@ public class ParentService {
      * service will return list of available parent
      * */
     public List<ParentResponseDTO> findAllParentsForStudentAssignment() {
-        List<Parent> parents = parentRepository.findParentByAccepted();
+        List<Parent> parents = parentRepository.findAll();
 
         return parents.stream()
                 .map(ParentResponseDTO::new)
@@ -295,13 +293,7 @@ public class ParentService {
         // 8- Save
         exitLogRepository.save(exitLog);
 
-        return new ParentResponseDTO(
-                parent.getId(),
-                parent.getUser().getUsername(),
-                parent.getNationalId(),
-                parent.getPhone(),
-                parent.isAccepted() ? "approved" : "pending"
-        );
+        return new ParentResponseDTO(parent);
 
     }
 
@@ -344,13 +336,7 @@ public class ParentService {
         exitLog.setLastOtpSentAt(LocalDateTime.now());
         exitLogRepository.save(exitLog);
 
-        return new ParentResponseDTO(
-                parent.getId(),
-                parent.getUser().getUsername(),
-                parent.getNationalId(),
-                parent.getPhone(),
-                parent.isAccepted() ? "approved" : "pending"
-        );
+        return new ParentResponseDTO(parent);
     }
 
     public void verifyExitOTP(Integer parentId, String otpCode) {

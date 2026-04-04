@@ -29,8 +29,6 @@ public class Parent {
     @Column(unique = true, nullable = false)
     private String phone;
 
-    private boolean isAccepted = false;
-
     /* Relationships:   */
     @OneToOne
     @MapsId
