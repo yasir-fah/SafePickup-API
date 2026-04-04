@@ -54,10 +54,6 @@ public class StudentService {
             throw new ApiException("Parent not found");
         }
 
-        if (!parent.isAccepted()) {
-            throw new ApiException("Parent not accepted");
-        }
-
         Student student = studentRepository.findStudentById(student_id);
         if (student == null) {
             throw new ApiException("Student not found");
@@ -84,11 +80,6 @@ public class StudentService {
 
         if (parent == null) {
             throw new ApiException("Parent with  ID " + parentId + " not found");
-        }
-
-        // 3- Check if parent is accepted
-        if (!parent.isAccepted()) {
-            throw new ApiException("Parent account is not yet accepted by admin");
         }
 
         // 4- Update student fields

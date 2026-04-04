@@ -7,6 +7,7 @@ import com.finalproject.safepickup.Model.User;
 import com.finalproject.safepickup.Repository.AdminRepository;
 import com.finalproject.safepickup.Repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,6 +17,7 @@ import java.util.List;
 public class AdminService {
     private final AdminRepository adminRepository;
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     // 1- get All admins
     public List<Admin> findAll() {
@@ -29,7 +31,7 @@ public class AdminService {
         // 1- adding user attribute
         User user = new User();
         user.setUsername(dto.getUsername());
-        user.setPassword(dto.getPassword()); // todo: hashing at security
+        user.setPassword(passwordEncoder.encode(dto.getPassword()));
         user.setEmail(dto.getEmail());
         user.setRole("ADMIN");
 
@@ -62,7 +64,9 @@ public class AdminService {
 
         // 3- Update user fields
         user.setUsername(dto.getUsername());
-        user.setPassword(dto.getPassword()); // todo: hashing at security
+        if (dto.getPassword() != null && !dto.getPassword().isEmpty()) {
+            user.setPassword(passwordEncoder.encode(dto.getPassword()));
+        }
         user.setEmail(dto.getEmail());
 
         // 4- Admin entity doesn't have fields to update (only LastLoginAt which is auto-managed)

@@ -21,7 +21,7 @@ public class ParentDTO {
 
     private String email;
 
-    // From Parent (all except isAccepted)
+    // From Parent
     @NotEmpty(message = "National ID can't be empty")
     @Size(min = 10, max = 10, message = "ID must be exactly length of 10")
     @Pattern(regexp = "^\\d{10}$", message = "ID must contain only 10 digits")
