@@ -118,6 +118,17 @@ public class StudentService {
                 .collect(Collectors.toList());
     }
 
+    public List<StudentResponseDTO> findAllStudentsByParentId(Integer parentId) {
+        Parent parent = parentRepository.findParentById(parentId);
+        if (parent == null) {
+            throw new ApiException("Parent not found");
+        }
+        List<Student> students = studentRepository.findAllByParentId(parentId);
+        return students.stream()
+                .map(StudentResponseDTO::new)
+                .collect(Collectors.toList());
+    }
+
     /* 7- endpoint will be used in UI
      * this will allow us to connect student with NFC card
      */
@@ -133,6 +144,13 @@ public class StudentService {
             throw new ApiException("NfcCard not found");
         }
 
+        if(!student.getNfcCards().isEmpty()){
+            for(NfcCard nfcCard : student.getNfcCards()){
+                if(nfcCard.getStatus().equals("RESERVED")) {
+                    throw new ApiException("Student Already has NFC card");
+                }
+            }
+        }
         if (nfc.getStatus().equals("FREE")) {
             nfc.setIssuedAt(LocalDateTime.now());
             nfc.setStatus("RESERVED");
