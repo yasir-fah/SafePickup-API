@@ -2,6 +2,7 @@ package com.finalproject.safepickup.Service;
 
 import com.finalproject.safepickup.Api.ApiException;
 import com.finalproject.safepickup.DTOin.StudentDTO;
+import com.finalproject.safepickup.DTOout.StudentNationalIdResponseDTO;
 import com.finalproject.safepickup.DTOout.StudentResponseDTO;
 import com.finalproject.safepickup.Model.NfcCard;
 import com.finalproject.safepickup.Model.Parent;
@@ -38,6 +39,7 @@ public class StudentService {
         Student student = new Student();
         student.setName(dto.getName());
         student.setGrade(dto.getGrade());
+        student.setNationalId(dto.getNationalId());
         student.setSchoolLat(dto.getSchoolLat());
         student.setSchoolLon(dto.getSchoolLon());
 
@@ -85,6 +87,7 @@ public class StudentService {
         // 4- Update student fields
         oldStudent.setName(dto.getName());
         oldStudent.setGrade(dto.getGrade());
+        oldStudent.setNationalId(dto.getNationalId());
         oldStudent.setSchoolLat(dto.getSchoolLat());
         oldStudent.setSchoolLon(dto.getSchoolLon());
 
@@ -115,6 +118,13 @@ public class StudentService {
         List<Student> students = studentRepository.findAll();
         return students.stream()
                 .map(StudentResponseDTO::new)
+                .collect(Collectors.toList());
+    }
+
+    public List<StudentNationalIdResponseDTO> findAllStudentsWithNationalId() {
+        List<Student> students = studentRepository.findAll();
+        return students.stream()
+                .map(StudentNationalIdResponseDTO::new)
                 .collect(Collectors.toList());
     }
 

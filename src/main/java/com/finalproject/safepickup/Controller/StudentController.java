@@ -63,4 +63,9 @@ public class StudentController {
     public ResponseEntity<?> getStudentsByParent(@AuthenticationPrincipal User user) {
         return ResponseEntity.status(200).body(studentService.findAllStudentsByParentId(user.getId()));
     }
+
+    @GetMapping("/get/students/national-id")
+    public ResponseEntity<?> getAllStudentsWithNationalId() {
+        return ResponseEntity.status(200).body(studentService.findAllStudentsWithNationalId());
+    }
 }

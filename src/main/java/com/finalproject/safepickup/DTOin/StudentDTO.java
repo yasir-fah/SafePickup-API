@@ -21,6 +21,10 @@ public class StudentDTO {
     @NotEmpty(message = "grade can't be empty")
     private String Grade;
 
+    @NotEmpty(message = "NationalId can't be empty")
+    @Size(min = 10, max = 10, message = "NationalId must be exactly 10 characters")
+    private String NationalId;
+
     @NotNull(message = "School latitude is required")
     private double SchoolLat;
 
