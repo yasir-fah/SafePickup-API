@@ -2,10 +2,12 @@ package com.finalproject.safepickup.Controller;
 
 import com.finalproject.safepickup.Api.ApiResponse;
 import com.finalproject.safepickup.DTOin.StudentDTO;
+import com.finalproject.safepickup.Model.User;
 import com.finalproject.safepickup.Service.StudentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -56,5 +58,14 @@ public class StudentController {
                                                 @PathVariable Integer nfcId) {
         String studentName = studentService.linkStudentWithNfc(studentId, nfcId);
         return ResponseEntity.status(200).body(new ApiResponse("NFC Card linked successfully to " + studentName));
+    }
+    @GetMapping("/get/my-students")
+    public ResponseEntity<?> getStudentsByParent(@AuthenticationPrincipal User user) {
+        return ResponseEntity.status(200).body(studentService.findAllStudentsByParentId(user.getId()));
+    }
+
+    @GetMapping("/get/students/national-id")
+    public ResponseEntity<?> getAllStudentsWithNationalId() {
+        return ResponseEntity.status(200).body(studentService.findAllStudentsWithNationalId());
     }
 }

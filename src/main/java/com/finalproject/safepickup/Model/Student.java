@@ -2,6 +2,7 @@ package com.finalproject.safepickup.Model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -29,6 +30,10 @@ public class Student {
     @Column(nullable = false)
     private String Grade;
 
+    @Column(nullable = false, length = 10)
+    @NotEmpty(message = "NationalId can't be empty")
+    @Size(min = 10, max = 10, message = "NationalId must be exactly 10 characters")
+    private String NationalId;
 
     private double SchoolLat;
 
