@@ -30,7 +30,7 @@ public class Student {
     @Column(nullable = false)
     private String Grade;
 
-    @Column(nullable = false, length = 10)
+    @Column(nullable = false, length = 10, unique = true)
     @NotEmpty(message = "NationalId can't be empty")
     @Size(min = 10, max = 10, message = "NationalId must be exactly 10 characters")
     private String NationalId;

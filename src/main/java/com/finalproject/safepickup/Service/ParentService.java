@@ -378,5 +378,35 @@ public class ParentService {
         exitLogRepository.save(exitLog);
     }
 
-    // TODO: add service receives Biometric results
+    public void verifyExitBiometric(Integer parentId) {
+
+        // 1- Find parent
+        Parent parent = parentRepository.findParentById(parentId);
+        if (parent == null) {
+            throw new ApiException("Parent not found");
+        }
+
+        // 2- Find parent's pending exit requests (within radius, biometric not yet verified, not expired)
+        List<ExitLog> pendingRequests = exitLogRepository
+                .findPendingBiometricRequestsByParent(parentId, LocalDateTime.now());
+
+        if (pendingRequests.isEmpty()) {
+            throw new ApiException("No pending exit request found or request expired");
+        }
+
+        // Get the most recent request
+        ExitLog exitLog = pendingRequests.get(0);
+
+        // 3- UI only calls this endpoint on successful biometric, so mark as verified
+        exitLog.setBiometricVerified(true);
+
+        // 4- Update final approval status using distance from fetched exitLog
+        boolean distanceOk = exitLog.isIsWithinRadius();
+        boolean biometricOk = exitLog.isBiometricVerified();
+
+        if (distanceOk && biometricOk) {
+            exitLog.setIsAccepted(true);
+        }
+        exitLogRepository.save(exitLog);
+    }
 }

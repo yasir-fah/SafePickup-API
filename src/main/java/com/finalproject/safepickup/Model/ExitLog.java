@@ -39,7 +39,7 @@ public class ExitLog {
 
     private boolean IsOtpVerified = false;
 
-    // private Boolean isBiometricVerified = false;  // TODO: Add later for biometric
+    private boolean isBiometricVerified = false;
 
 
     private String parentLat; // ask from UI
