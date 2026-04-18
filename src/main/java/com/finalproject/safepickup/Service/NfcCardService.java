@@ -116,7 +116,6 @@ public class NfcCardService {
         exitLogRepository.save(activeRequest);
 
         // 5- Return success message with student name
-        // todo: send message to parent that his child scan the NFC
         System.out.print("student scanned successfully");
         return student.getName();
     }

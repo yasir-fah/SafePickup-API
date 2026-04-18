@@ -53,6 +53,6 @@ public class AuthController {
     @PostMapping("/register/parent")
     public ResponseEntity<?> registerParent(@Valid @RequestBody ParentDTO parentDTO) {
         parentService.registerParent(parentDTO);
-        return ResponseEntity.status(200).body(new ApiResponse("Parent registered successfully! Awaiting admin approval."));
+        return ResponseEntity.status(200).body(new ApiResponse("Parent registered successfully!"));
     }
 }

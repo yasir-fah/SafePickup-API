@@ -75,4 +75,12 @@ public class ParentController {
         );
     }
 
+    @PostMapping("/biometric-auth")
+    public ResponseEntity<?> biometricAuth(@AuthenticationPrincipal User user) {
+        parentService.verifyExitBiometric(user.getId());
+        return ResponseEntity.status(200).body(
+                new ApiResponse("Biometric verified! Exit request approved for 10 minutes")
+        );
+    }
+
 }

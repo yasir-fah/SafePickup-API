@@ -27,4 +27,12 @@ public interface ExitLogRepository extends JpaRepository<ExitLog,Integer> {
             "ORDER BY e.RequestTime DESC")
     List<ExitLog> findPendingExitRequestsByParent(@Param("parentId") Integer parentId,
                                                   @Param("now") LocalDateTime now);
+
+    @Query("SELECT e FROM ExitLog e WHERE e.parent.id = :parentId " +
+            "AND e.IsWithinRadius = true " +
+            "AND e.isBiometricVerified = false " +
+            "AND e.ExpiresAt > :now " +
+            "ORDER BY e.RequestTime DESC")
+    List<ExitLog> findPendingBiometricRequestsByParent(@Param("parentId") Integer parentId,
+                                                       @Param("now") LocalDateTime now);
 }
