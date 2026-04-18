@@ -279,7 +279,6 @@ public class ParentService {
         exitLog.setIsWithinRadius(isWithinRadius);
         exitLog.setIsOtpVerified(false);
         exitLog.setIsAccepted(false);
-        // TODO: add biometric auth
 
 
         // 9- Throw error if faraway
