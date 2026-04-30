@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class NfcCardDTO {
 
-    @NotEmpty(message = "UID cannot be empty")
+    @NotEmpty(message = "NFC UID is required ")
     @Size(min = 8, max = 20, message = "UID should be between 8 and 20 characters")
     private String uid;
 

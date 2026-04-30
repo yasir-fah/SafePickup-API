@@ -45,6 +45,12 @@ public class ParentService {
 
     // 2- Register new parent
     public void registerParent(ParentDTO dto) {
+        if (userRepository.existsByEmail(dto.getEmail())) {
+            throw new ApiException("A parent with this email already exists");
+        }
+        if (parentRepository.existsByNationalId(dto.getNationalId())) {
+            throw new ApiException("A parent with this National ID already exists");
+        }
 
         // 1- adding user attribute
         User user = new User();
@@ -79,6 +85,13 @@ public class ParentService {
         User user = oldParent.getUser();
         if (user == null) {
             throw new ApiException("Associated user not found");
+        }
+
+        if (userRepository.existsByEmailAndIdNot(dto.getEmail(), user.getId())) {
+            throw new ApiException("A parent with this email already exists");
+        }
+        if (parentRepository.existsByNationalIdAndIdNot(dto.getNationalId(), parentId)) {
+            throw new ApiException("A parent with this National ID already exists");
         }
 
         // 3- Update user fields
