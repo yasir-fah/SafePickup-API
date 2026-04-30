@@ -34,8 +34,10 @@ public class StudentService {
      * this for register new student to the system
      */
     public void addStudent(StudentDTO dto) {
+        if (studentRepository.existsByNationalId(dto.getNationalId())) {
+            throw new ApiException("A student with this National ID already exists");
+        }
 
-        // create new student
         Student student = new Student();
         student.setName(dto.getName());
         student.setGrade(dto.getGrade());
@@ -82,6 +84,10 @@ public class StudentService {
 
         if (parent == null) {
             throw new ApiException("Parent with  ID " + parentId + " not found");
+        }
+
+        if (studentRepository.existsByNationalIdAndIdNot(dto.getNationalId(), studentId)) {
+            throw new ApiException("A student with this National ID already exists");
         }
 
         // 4- Update student fields

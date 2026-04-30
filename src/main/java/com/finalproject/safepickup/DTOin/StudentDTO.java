@@ -15,14 +15,17 @@ import lombok.NoArgsConstructor;
 public class StudentDTO {
 
 
-    @Size(min = 3, max = 50, message = "username should be between 3 and 50")
+    @Size(min = 3, max = 50, message = "name should be between 3 and 50")
+    @NotEmpty(message = "name is required")
     private String name;
 
-    @NotEmpty(message = "grade can't be empty")
+    @NotEmpty(message = "grade is required")
     private String Grade;
 
-    @NotEmpty(message = "NationalId can't be empty")
-    @Size(min = 10, max = 10, message = "NationalId must be exactly 10 characters")
+    @NotEmpty(message = "NationalId is required")
+    @Size(min = 10, max = 10, message = "NationalId is required, with exactly 10 digits")
+    @Pattern(regexp = "^\\d{10}$", message = "NationalId is required, with exactly 10 digits")
+    @Column(unique = true)
     private String NationalId;
 
     @NotNull(message = "School latitude is required")
